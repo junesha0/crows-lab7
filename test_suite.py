@@ -1,18 +1,15 @@
 import RPi.GPIO as GPIO
+import Adafruit_MCP3008
+import Adafruit_GPIO.SPI as SPI
+import time
 
-LED = 12
+LED = 11 
 
-# SPI
-CLK = 18
-MISO = 23
-MOSI = 24
-CS = 25
+LIGHT = 1  # Channel number of Light Sensor for ADC
+light_thresh = 100
 
-LIGHT = 0 # Channel number of Light Sensor for ADC
-light_thresh = 20
-
-SOUND = 3 # Channel of Sound Sensor
-sound_thresh = 20
+SOUND = 0  # Channel of Sound Sensor
+sound_thresh = 200
 
 def init():
 	GPIO.setmode(GPIO.BOARD)
@@ -21,7 +18,9 @@ def init():
 	GPIO.setup(LED, GPIO.OUT)
 	
 	# Software SPI Configuration
-	mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, miso=MISO, mosi=MOSI)
+	SPI_PORT   = 0
+	SPI_DEVICE = 0
+	mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 	return mcp
 	
 	
@@ -29,9 +28,9 @@ def init():
 def blink_LED(n, interval):
 	for i in range(0, n):
 		GPIO.output(LED, 1)
-		sleep(interval)
+		time.sleep(interval)
 		GPIO.output(LED, 0)
-		sleep(interval)
+		time.sleep(interval)
 
 def read_light_sensor(mcp):
 	t = 0
@@ -44,7 +43,7 @@ def read_light_sensor(mcp):
 			print(val, "dark")
 			
 		# Wait 100ms
-		sleep(0.1)
+		time.sleep(0.1)
 		t += 0.1
 		
 def read_sound_sensor(mcp):
@@ -57,11 +56,12 @@ def read_sound_sensor(mcp):
 			GPIO.output(LED, 1) # Turn on LED
 			
 		# Wait 100ms
-		sleep(0.1)
+		time.sleep(0.1)
 		t += 0.1
 			
 		if (val > sound_thresh):
 			GPIO.output(LED, 0) # Turn off LED
+			
 			
 
 if __name__ == "__main__":
